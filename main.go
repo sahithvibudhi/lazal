@@ -47,12 +47,28 @@ func processData(data *[]byte, conn net.Conn) {
     splitted := strings.Split(command, " ")
     switch splitted[0] {
     case "GET":
+        if len(splitted) < 2 {
+            conn.Write([]byte("Usage: GET key \n"))
+            break
+        }
         val := getCommand(splitted[1])
         // fmt.Println(val)
         conn.Write([]byte(val + "\n"))
         break
     case "SET":
+        if len(splitted) < 3 {
+            conn.Write([]byte("Usage: SET key value \n"))
+            break
+        }
         setCommand(splitted[1], splitted[2])
+        conn.Write([]byte("done\n"))
+        break
+    case "DEL":
+        if len(splitted) < 2 {
+            conn.Write([]byte("Usage: DEL key \n"))
+            break
+        }
+        delCommand(splitted[1])
         conn.Write([]byte("done\n"))
         break
     default:
@@ -71,6 +87,12 @@ func setCommand(key string, val string) {
     hashMap[key] = val
 }
 
-
+func delCommand(key string) {
+    key = strings.TrimSpace(key)
+    _, ok := hashMap[key]
+    if ok {
+        delete(hashMap, key)
+    }
+}
 
 
