@@ -10,10 +10,12 @@ import (
 
 var hashMap = make(map[string]string)
 
+const PORT = "5555"
+
 func main() {
-    fmt.Println("starting server on 8080")
+    fmt.Println("starting server on " + PORT)
     //var hashMap = make(map[string]interface{}) fmt.Println(hashMap)
-    socket, err := net.Listen("tcp", ":8080")
+    socket, err := net.Listen("tcp", ":"+PORT)
     if err != nil {
         panic(err)
     }
