@@ -5,14 +5,22 @@ import (
     "fmt"
     "net"
     "strings"
-    //"time"
+    "sync"    //"time"
 )
 
-var hashMap = make(map[string]string)
+type customMap struct { 
+    sync.RWMutex
+    store map[string]string 
+}
+
+var m customMap
+
+//var lock = sync.RWMutex{}
 
 const PORT = "5555"
 
 func main() {
+    m = customMap { store: make(map[string]string) }
     fmt.Println("starting server on " + PORT)
     //var hashMap = make(map[string]interface{}) fmt.Println(hashMap)
     socket, err := net.Listen("tcp", ":"+PORT)
@@ -35,7 +43,7 @@ func handleConnection(conn net.Conn) {
         if err != nil {
             // Handle error
         }
-        go processData(&data, conn)
+        processData(&data, conn)
     }
 }
 
@@ -79,19 +87,24 @@ func processData(data *[]byte, conn net.Conn) {
 
 func getCommand(key string) string {
     key = strings.TrimSpace(key)
-    return hashMap[key]
+    m.RLock()
+    var v string = m.store[key]
+    m.RUnlock()
+    return v
 }
 
 func setCommand(key string, val string) {
     // fmt.Println(key, val)
-    hashMap[key] = val
+    m.RLock()
+    m.store[key] = val
+    m.RUnlock()
 }
 
 func delCommand(key string) {
     key = strings.TrimSpace(key)
-    _, ok := hashMap[key]
+    _, ok := m.store[key]
     if ok {
-        delete(hashMap, key)
+        delete(m.store, key)
     }
 }
 
